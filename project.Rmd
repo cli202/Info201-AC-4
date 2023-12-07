@@ -1,0 +1,300 @@
+---
+title: "project"
+author: "Cindy Li"
+date: "2023-12-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(maps)
+```
+
+
+```{r}
+country_vac <- read.csv("country_vaccinations.csv")
+covid_death <- read.csv("WHO-COVID-19-global-data.csv")
+country_type_vac <- read.csv("country_vaccinations_by_manufacturer.csv")
+
+```
+```{r}
+# Rename and select the columns we want first
+country_vac <- rename(country_vac, Country = country, Date = date, Total_Vaccinations = total_vaccinations)
+country_vac <- country_vac %>% select (Country, Date, Total_Vaccinations)
+country_type_vac <- rename(country_type_vac, Country = location, Date = date, Vaccine = vaccine, Vaccinations_per_Type = total_vaccinations)
+covid_death <- rename(covid_death, Date = Date_reported)
+covid_death <- covid_death %>% select (Date, Country, WHO_region, New_cases, Cumulative_cases, New_deaths, Cumulative_deaths)
+
+# remove empty entries
+country_vac <- na.omit(country_vac)
+covid_death <- na.omit(covid_death)
+country_type_vac<- na.omit(country_type_vac)
+
+```
+```{r}
+country_vac_cases <- inner_join(country_vac, covid_death, by = c("Country", "Date"))
+head(country_vac_cases)
+country_vac_type_cases <- inner_join(country_vac_cases, country_type_vac, by = c("Country", "Date"))
+head(country_vac_type_cases)
+```
+Vaccination Coverage vs. Covid-19 Cases
+
+```{r}
+avg_data <- country_vac_type_cases %>%
+  group_by(WHO_region, Date) %>%
+  summarize(Avg_Total_Vaccinations = mean(Total_Vaccinations),
+            Avg_Cumulative_Cases = mean(Cumulative_cases))
+
+# Create a scatter plot for COVID-19 cases with linear regression lines by region
+ggplot(avg_data, aes(x = Avg_Total_Vaccinations, y = Avg_Cumulative_Cases, color = WHO_region)) +
+  geom_point() +
+  labs(title = "Vaccination Coverage vs. COVID-19 Cases",
+       x = "Total Vaccinations",
+       y = "Total COVID-19 Cases") +
+  scale_color_manual(values = c(
+    "EMRO" = "red",
+    "AFRO" = "blue",
+    "AMRO" = "green",
+    "SEARO" = "purple",
+    "WPRO" = "orange",
+    "EURO" = "brown"
+  )) +
+  theme_minimal()
+
+# Adds linear regression line 
+ggplot(avg_data, aes(x = Avg_Total_Vaccinations, y = Avg_Cumulative_Cases, color = WHO_region)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, aes(group = WHO_region, color = WHO_region)) +  
+  labs(title = "Vaccination Coverage vs. COVID-19 Cases",
+       x = "Total Vaccinations",
+       y = "Total COVID-19 Cases") +
+  scale_color_manual(values = c(
+    "EMRO" = "red",
+    "AFRO" = "blue",
+    "AMRO" = "green",
+    "SEARO" = "purple",
+    "WPRO" = "orange",
+    "EURO" = "brown"
+  )) +
+  theme_minimal()
+```
+
+Vaccination coverage vs. Covid-19 Deaths
+
+```{r}
+
+avg_data <- country_vac_type_cases %>%
+  group_by(WHO_region, Date) %>%
+  summarize(Avg_Total_Vaccinations = mean(Total_Vaccinations),
+            Avg_Cumulative_Deaths = mean(Cumulative_deaths))
+
+ggplot(avg_data, aes(x = Avg_Total_Vaccinations, y = Avg_Cumulative_Deaths, color = WHO_region)) +
+  geom_point() +
+  labs(title = "Average Vaccination Coverage vs. COVID-19 Deaths",
+       x = "Average Total Vaccinations",
+       y = "Average Total COVID-19 Deaths") +
+  scale_color_manual(values = c(
+    "EMRO" = "red",
+    "AFRO" = "blue",
+    "AMRO" = "green",
+    "SEARO" = "purple",
+    "WPRO" = "orange",
+    "EURO" = "brown"
+  )) +
+  theme_minimal()
+
+# Adds linear regression line
+ggplot(avg_data, aes(x = Avg_Total_Vaccinations, y = Avg_Cumulative_Deaths, color = WHO_region)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, aes(group = WHO_region, color = WHO_region)) +  
+  labs(title = "Average Vaccination Coverage vs. COVID-19 Deaths",
+       x = "Average Total Vaccinations",
+       y = "Average Total COVID-19 Deaths") +
+  scale_color_manual(values = c(
+    "EMRO" = "red",
+    "AFRO" = "blue",
+    "AMRO" = "green",
+    "SEARO" = "purple",
+    "WPRO" = "orange",
+    "EURO" = "brown"
+  )) +
+  theme_minimal()
+```
+Death Rate over Time
+
+```{r}
+
+country_vac_type_cases$Date <- as.Date(country_vac_type_cases$Date)
+country_vac_type_cases$Month <- format(country_vac_type_cases$Date, "%Y-%m")
+
+# Calculate the monthly death rate and add a new column 'Death_Rate' 
+country_vac_type_cases <- country_vac_type_cases %>%
+  group_by(Country, Month) %>%
+  mutate(
+    Death_Rate = sum(Cumulative_deaths) / sum(Total_Vaccinations)
+  )
+
+# Create a new categorical column 'Death_Rate_Level'
+country_vac_type_cases$Death_Rate_Level <- cut(
+  country_vac_type_cases$Death_Rate,
+  breaks = c(-Inf, 0.01, 0.05, Inf),
+  labels = c("Low", "Medium", "High"),
+  include.lowest = TRUE
+)
+
+agg_data <- country_vac_type_cases %>%
+  group_by(Month, Death_Rate_Level) %>%
+  summarize(Num_Countries = n_distinct(Country))
+
+# Create a bar plot with the new Death_Rate_Category
+ggplot(agg_data, aes(x = Month, y = Num_Countries, fill = Death_Rate_Level)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  labs(title = "Death Rate Categories Over Time",
+       x = "Month",
+       y = "Number of Countries") +
+  scale_fill_manual(values = c("Low" = "green", "Medium" = "yellow", "High" = "red")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+Vaccine Efficacy Against Covid Cases 
+```{r}
+country_vac_type_cases <- country_vac_type_cases %>%
+    mutate(Vaccine_Efficacy_Cases = (1 - New_cases / Cumulative_cases) * 100,
+         Vaccine_Efficacy_Deaths = (1 - New_deaths / Cumulative_deaths) * 100)
+
+# Calculate average vaccine efficacy by region, date, and vaccine type
+avg_vaccine_efficacy <- country_vac_type_cases %>%
+  group_by(WHO_region, Date, Vaccine) %>%
+  summarize(Avg_Vaccine_Efficacy_Cases = mean(Vaccine_Efficacy_Cases),
+            Avg_Vaccine_Efficacy_Deaths = mean(Vaccine_Efficacy_Deaths),
+            Avg_Total_Vaccinations = mean(Total_Vaccinations))
+
+ggplot(avg_vaccine_efficacy, aes(x = Avg_Total_Vaccinations, y = Avg_Vaccine_Efficacy_Cases, color = Vaccine)) +
+  geom_point() +
+  labs(title = "Average Vaccine Efficacy in Reducing COVID-19 Cases",
+       x = "Average Total Vaccinations",
+       y = "Average Vaccine Efficacy (%)") +
+  scale_color_manual(values = c(
+    "Moderna" = "red",
+    "Oxford/AstraZeneca" = "blue",
+    "Sinopharm/Beijing" = "green", 
+    "Sputnik V" = "purple",
+    "CanSino" = "yellow",
+    "Pfizer/BioNTech" = "orange",
+    "Johnson&Johnson" = "brown", 
+    "Novavax" = "pink",
+    "Sinovac" = "cyan"
+  )) +
+  theme_minimal()
+```
+
+Vaccine Efficacy Against Covid Deaths
+
+```{r}
+# Create a scatter plot for average vaccine efficacy in reducing deaths
+ggplot(avg_vaccine_efficacy, aes(x = Avg_Total_Vaccinations, y = Avg_Vaccine_Efficacy_Deaths, color = Vaccine)) +
+  geom_point() +
+  labs(title = "Average Vaccine Efficacy in Reducing COVID-19 Deaths",
+       x = "Average Total Vaccinations",
+       y = "Average Vaccine Efficacy (%)") +
+  scale_color_manual(values = c(
+    "Moderna" = "red",
+    "Oxford/AstraZeneca" = "blue",
+    "Sinopharm/Beijing" = "green", 
+    "Sputnik V" = "purple",
+    "CanSino" = "yellow",
+    "Pfizer/BioNTech" = "orange",
+    "Johnson&Johnson" = "brown", 
+    "Novavax" = "pink",
+    "Sinovac" = "cyan"
+  )) +
+  theme_minimal()
+
+```
+
+Vaccination over Time
+```{r}
+country_vac$Date <- as.Date(country_vac$Date)
+covid_death$Date <- as.Date(covid_death$Date)
+
+# Merge datasets
+time_analysis <- merge(country_vac, covid_death, by = c("Country", "Date"))
+
+# country_vac_type_cases$Date <- as.Date(country_vac_type_cases$Date)
+
+avg_vacc_by_region <- time_analysis %>%
+  group_by(WHO_region, Date) %>%
+  summarize(Avg_Vaccinations = mean(Total_Vaccinations, na.rm = TRUE))
+
+# Create a time series plot with each region as a line of a different color
+ggplot(avg_vacc_by_region, aes(x = Date, y = Avg_Vaccinations, group = WHO_region, color = WHO_region)) +
+  geom_line() +
+  labs(title = "Average Vaccination Progress Over Time by Region",
+       x = "Date",
+       y = "Average Total Vaccinations") +
+  scale_color_manual(values = c(
+    "EMRO" = "red",
+    "AFRO" = "blue",
+    "AMRO" = "green",
+    "SEARO" = "purple",
+    "WPRO" = "orange",
+    "EURO" = "brown"
+  )) +
+  theme_minimal()
+```
+
+Covid Deaths Over Time
+```{r}
+time_analysis <- merge(country_vac, covid_death, by = c("Country", "Date"))
+
+# Calculate the average deaths by region and date
+avg_deaths_by_region <- time_analysis %>%
+  group_by(WHO_region, Date) %>%
+  summarize(Avg_Deaths = mean(Cumulative_deaths, na.rm = TRUE))
+
+ggplot(avg_deaths_by_region, aes(x = Date, y = Avg_Deaths, group = WHO_region, color = WHO_region)) +
+  geom_line() +
+  labs(title = "Average COVID-19 Deaths Over Time by Region",
+       x = "Date",
+       y = "Average Cumulative Deaths") +
+  scale_color_manual(values = c(
+    "EMRO" = "red",
+    "AFRO" = "blue",
+    "AMRO" = "green",
+    "SEARO" = "purple",
+    "WPRO" = "orange",
+    "EURO" = "brown"
+  )) +
+  theme_minimal()
+```
+Covid Deaths Over Time
+
+```{r}
+# Calculate the average deaths by region and date
+avg_cases_by_region <- time_analysis %>%
+  group_by(WHO_region, Date) %>%
+  summarize(Avg_Cases = mean(Cumulative_cases, na.rm = TRUE))
+
+
+ggplot(avg_cases_by_region, aes(x = Date, y = Avg_Cases, group = WHO_region, color = WHO_region)) +
+  geom_line() +
+  labs(title = "Average COVID-19 Cases Over Time by Region",
+       x = "Date",
+       y = "Average Cumulative Cases") +
+  scale_color_manual(values = c(
+    "EMRO" = "red",
+    "AFRO" = "blue",
+    "AMRO" = "green",
+    "SEARO" = "purple",
+    "WPRO" = "orange",
+    "EURO" = "brown"
+  )) +
+  theme_minimal()
+```
+```{r}
+head(country_vac_type_cases)
+```
