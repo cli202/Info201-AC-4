@@ -1,6 +1,6 @@
 ---
 title: "project"
-author: "Cindy Li"
+author: "Cindy Li, Jacob Cash, Ismael Lagunes, Povilas Juskevicius"
 date: "2023-12-05"
 output: html_document
 ---
