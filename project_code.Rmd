@@ -1,5 +1,5 @@
 ---
-title: "project"
+title: "COVID-19 Vaccination Efficiency"
 author: "Cindy Li, Jacob Cash, Ismael Lagunes, Povilas Juskevicius"
 date: "2023-12-05"
 output: html_document
