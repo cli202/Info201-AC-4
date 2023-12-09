@@ -1,0 +1,162 @@
+---
+title: "ExecutiveReport"
+author: "Cindy Li, Jacob Cash, Ismael Lagunes, Povilas Juskevicius"
+date: "2023-12-09"
+output: html_document
+---
+
+```{r}
+library("magick")
+```
+
+Title Page:
+
+## Introduction:
+
+In 2019 COVID-19 first emerged in Wuhan, China. In 2020, COVID began to spread across every continent, creating a global pandemic. Many precautions were taken, and eventually a vaccine was made to combat the virus. Cases have gone up over time and some argue that the vaccine is ineffective. Other theorists go as far to say that the vaccine is poison being injected by government officials. Although these are extremist theories, it goes to show how many do not believe that Pfizer, Moderna, and other companies are mitigating COVID-19 mortality rates.
+
+The media tells us that the vaccines should be mandatory, and even went as far to say that you are at risk of death if not vaccinated. What we know from the CDC is that while COVID-19 has mortality rates, fatal cases are rare and are found most commonly in those who are seniors or infants, and those who have respiratory issues.
+
+Using the data we obtained we want to answer four questions. What is the relationship between vaccination coverage and mortality rates on a global scale? By taking two datasets that include vaccination efficacy and total cases and deaths on a global scale, we can create visual representations of the relationship throughout a certain period of time. Are there any discernible patterns between the two during a certain period of time? These graphs will also showcase any trend lines or patterns that come with the data. What is the vaccination efficacy and mortality rates depending on the region? With the datasets we analyze, we will be able to determine the vaccination coverage based on region along with the mortality rates in these regions. This will allow us to discover any potential trends that are location based. We also want to look at the different vaccine brands. Does the brand have an effect on the mortality rate? We are able to answer this by looking at the average total vaccinations, as well as the average total vaccination efficacy depending on the brand. This will showcase the effectiveness of each vaccination brand.
+
+Today COVID-19 is still at large with plenty of new variants being discovered. While vaccinations exist, cases are still common among all countries. The information that our research provides will highlight the potential risks that come with COVID-19. With many people who are anti-vaccinators, and those who simply do not want to get vaccinated, our research will provide the answers on whether or not it truly makes a difference. This research can be the turning factor for an individual's ideas and notions on how to approach COVID-19. This report will provide information based only on the data we used. There are no biases, allowing the reader to come to their own conclusions based on the information provided.
+
+## Explain Your Data:
+
+
+### Description of final dataset 
+
+Each row represents the number of new and cumulative Covid-19 cases and deaths and the total number of Covid-19 vaccinations that have occurred in each specific country on a specific date. 
+
+### Variables Included
+Country: The country that the covid-19 data is reporting
+Date: Covid-19 data on said specific date 
+
+Total_Vaccinations: Total number of Covid-19 vaccinations in said country on specific date
+
+WHO_region: WHO region said country is in 
+
+New_cases: New Covid-19 cases in said country on specific date
+
+Cumulative_cases: Total Covid-19 cases in said country until specific date
+
+New_deaths: New Covid-19 deaths in said country on specific date
+
+Cumulative_deaths: Total Covid-19 deaths in said country until specific date
+
+Vaccine: The type of vaccine (possible one of many) that has been registered in said country
+
+Vaccinations_per_Type: Total number of type of vaccine specified in previous column that has been registered to people in said country until specific date
+
+Month: The month of the date
+
+Death_Rate: The rate of death in country as calculated by sum of Cumulative_deaths divided by Total_vaccinations for each country per month
+
+Death_Rate_Level: Categorical variable that divides Death_Rate into low, medium, and high levels. 
+
+Vaccine_Efficacy_Cases: Efficacy of different types of vaccines against new Covid-19 cases, as calculated by 1 - New_cases divided by Cumulative_cases in percentage form
+
+Vaccine_Efficacy_Deaths: Efficacy of different types of vaccines against new Covid-19 deaths, as calculated by 1 - New_deaths divided by Cumulative_cases in percentage form
+
+### Summary Statistics
+1. Number of rows: 25,360
+2. Number of columns: 15
+3. No missing or invalid date in any rows (all have been removed in data processing steps). 
+
+## Discuss Your Methods:
+### Data Processing Choices:
+Data Loading and Renaming: The first step was to load the three datasets: country_vaccinations.csv, WHO-COVID-19-global-data.csv, and country_vaccinations_by_manufacturer.csv. After loading, the columns were renamed for consistency across datasets (e.g., renaming 'country' to 'Country', 'date' to 'Date', etc.).
+
+Column Selection and Filtering: Only relevant columns needed for the analysis were selected. For country_vac, the columns 'Country', 'Date', and 'Total_Vaccinations' were retained. Similar selection and renaming were applied to the other datasets.
+
+Data Joining: We opted for an inner join using both "Country" and "Date" rather than solely "Country"  because we would then align entries based on specific dates. Utilizing just the "Country" column for the join could risk amalgamating entries from different dates, potentially distorting temporal trends. Sorting by date could also make the data unreadable and hard to filter for future analyses. 
+Handling Missing Values: The na.omit function was used to remove rows with missing values. This decision was made to ensure the integrity of the data used for analysis.
+
+### Variables Included:
+Common Variables: Key variables like 'Country', 'Date', 'Total_Vaccinations', 'Cumulative_deaths', etc., were included to facilitate the analysis. The use of common variables allowed for effective merging of datasets.
+Derived Variables: Variables like 'Death_Rate' and 'Death_Rate_Level' were created to capture the relationship between cumulative deaths and total vaccinations without adding additional columns and mutating the dataset further. 
+Technical Decisions:
+Date Conversion: Date columns were converted to the Date data type to facilitate time-based analysis.
+
+Aggregation: Aggregation was used to summarize cumulative deaths and total vaccinations by country and month most of the time, with vaccine type and WHO_region added in to make different subsets of specialized data. This allowed for a more focused analysis on a monthly basis and not have our graphs be cluttered up with too muc hdaily data.
+
+Categorical Labeling: The 'cut' function was used to categorize death rates into 'Low', 'Medium', and 'High' levels.
+
+### Sample Selection
+time_analysis: The creation of the time_analysis dataset involved merging country_vac and covid_death based on the Country and Date columns. This dataset enabled the exploration of temporal trends in vaccination coverage and COVID-19-related metrics. The time series analysis utilized this dataset to visualize average vaccination progress over time by region.
+
+avg_data: The avg_data dataset was generated from country_vac_type_cases by grouping data by WHO_region and Date. This dataset facilitated the analysis of average total vaccinations and cumulative cases. Visualizations, such as scatter plots and linear regression lines, were created to understand the relationship between vaccination coverage and COVID-19 cases across different regions.
+
+avg_vaccine_efficacy: For vaccine efficacy analysis, the avg_vaccine_efficacy dataset was derived from country_vac_type_cases by grouping data by WHO_region, Date, and Vaccine. This dataset allowed us to assess the effectiveness of various vaccines in reducing COVID-19 cases and deaths. Scatter plots with color-coded vaccine types were employed for a comprehensive visualization.
+
+### Statistical Methods:
+1. Linear Regression: Linear regression lines were added to scatter plots comparing vaccination coverage with both COVID-19 cases and deaths. These lines serve as a visual representation of the average trend for each WHO region, allowing for the identification of potential associations. The slope and direction of the regression lines offer insights into the strength and nature of the relationship. Positive slopes suggest a potential protective effect, while negative slopes indicate a potential reduction in adverse outcomes with higher vaccination coverage.
+2. Scatterplots: Scatter plots were utilized to explore relationships between vaccination metrics, COVID-19 cases/deaths, and vaccine efficacy. Scatter plots with color-coded vaccines visually represented vaccine efficacy in reducing COVID-19 cases and deaths as well as the correlation between vaccination progress and OVID-19 cases and deaths. Scatter plots offer a detailed look at how different vaccines perform, while the bar plot offers a summarized view of death rate trends over time. These visualizations enhance the understanding of nuanced relationships within the data.
+3. Time Series Analysis: Line plots were generated to illustrate average vaccination progress and average COVID-19 deaths over time. Different lines represent distinct WHO regions, enabling a temporal comparison.Peaks and troughs in the time series plots provide insights into the dynamics of vaccination coverage and disease outcomes. Temporal patterns may reveal periods of accelerated vaccination or variations in mortality rates.
+4. Categorical Bar Plot: Bar plots categorized countries into 'Low,' 'Medium,' and 'High' death rate levels, providing a categorical overview. The bar plot offers a summarized view of death rate trends over time. These visualizations enhance the understanding of nuanced relationships within the data.
+
+## Talk about Results:
+
+There were many comparisons made between the following factors: WHO Regions, COVID 19 Cases, COVID 19 Deaths, and Vaccinations. When looking at the graph comparing Total COVID-19 Cases and Total Vaccinations, there is an increase of vaccinations with respect to Total COVID-19 Cases. Each dot represents a specific day from 2020-12-04 to 2022-03-30 for every graph
+
+```{r}
+plot(image_read("Vaccination Coverage Covid Cases.JPG"))
+```
+
+The results indicate that there was an increase of vaccinations as COVID-19 cases increased rapidly. Following, COVID-19 cases remained stable, yet total vaccinations continued to increase. Towards the end of the graph, there is a steady increase of both variables. These regions include the European Region and Region of the Americas.
+
+```{r}
+plot(image_read("Vaccination Coverage Covid Cases LR.JPG"))
+```
+
+
+The graph is the same as the previous graph with a line of best fit.  One main limitation that needs to be considered is the African Region and SouthEast Asian Region. These two regions have limited entries which do not properly represent a positive or negative trend. Yet, these are findings that could have been analyzed on an individual basis.
+
+```{r}
+plot(image_read("Vaccination Coverage Covid Death LR.JPG"))
+```
+
+This graph represents the Average Total Vaccinations compared to the Total COVID-19 Deaths. At first, there is an increase of Average Total COVID-19 Deaths and low Average Total Vaccinations. Overtime, deaths decreased causing a plateau in most regions. Once again, there are a small number of entries for the SEARO and AFRO to tell if there is any positive or negative correlation.
+
+```{r}
+plot(image_read("Death Rate Categories Time.JPG"))
+```
+
+In this bar graph, there are three main points to consider. A red bar indicates a high death rate of 5% or higher. A yellow bar indicates a medium death rate of 1% - 5%. A green bar represents a low death rate lower than 1% and lower. For each country that fits within these categories, the count of countries will increase for the respective bar. The death rate is calculated using the total deaths over the total vaccinations given.
+At the end of 2020, all countries that had entries had a high death rate. As time passed, the countries started from 2021-01 to 2021-08, the countries moved from the high death rate bar to the low death rate bar. Towards the end, the low death rate bar diminished as total deaths started to decrease and total vaccinations started to increase.
+
+```{r}
+plot(image_read("Avg Vaccine Efficacy Cases.JPG"))
+```
+
+This scatterplot is representing each type of vaccine and the average vaccine efficacy percentage over average total vaccinations given for COVID-19 cases. Many vaccines have a high average efficacy rate. Vaccines that are seen as potential outliers are the Oxford/AstraZeneca and Novavax. The CanSino vaccine is difficult to differentiate. 
+
+```{r}
+plot(image_read("Avg Vaccine Efficacy Deaths.JPG"))
+```
+
+This scatterplot is representing each type of vaccine and the average vaccine efficacy percentage over average total vaccinations given for COVID-19 deaths. Similar to the previous graph, most vaccines have a high average efficacy rate. Vaccines that are seen as potential outliers are the Oxford/AstraZeneca and Sinovac. The CanSino vaccine is difficult to differentiate as well.
+
+```{r}
+plot(image_read("Vaccination Progress.JPG"))
+```
+
+This line graph represents the average vaccination progress over time. The lines represent each WHO region. Results show that SEARO and WPRO have the highest average vaccination progress, followed by the rest of the regions.
+
+```{r}
+plot(image_read("Avg Deaths Time.JPG"))
+```
+
+This final line graph represents the average COVID-19 deaths over time. Each line represents each individual WHO region. AMRO and SEARO had high average accumulated deaths, whereas the rest of the countries had low death compared to other regions. Most WHO regions have a high spike of average cumulative deaths, then quickly diminish. Shortly after for all regions, there is a slow steady increase of average cumulative deaths.
+
+
+##Discuss Your Findings:
+
+The main conclusion of the data was vaccines diminish the rate of COVID death and COVID cases, yet every region does have unique findings. The dot and line plot, VaccinationCoverage vs. COVID-19 Cases, show within 2,500,000 cases the total vaccination coverage increased and helped in reducing COVID-19 cases in all regions. Leading to the relationship between vaccination coverage and mortality rates, where there is clear indication that vaccines are reducing deaths and cases. On the data between Vaccination Coverage vs. COVID-19 Deaths, a noticeable finding was AMRO region being above 15000 deaths over EURO region, yet the EURO region had more cases over time. To follow, all vaccines played an important role in reducing cases and deaths due to their high efficacy rate, yet there were no major outliers showing a lower vaccine efficacy. The Pfizer/BioNTech and Novavac were common throughout the distribution of total vaccines. In addition, these vaccines were massly distributed throughout the WPRO and SEARO regions, yet much greater than the other regions. Overall, the data shows that mostly all brands of vaccines had significantly high efficacy, therefore reducing total cases and deaths rates from a high 5% to a low 1%. Overall, average COVID-19 cases and deaths lowered over time for every region, yet COVID-19 average cases remained above deaths.
+The limitations encountered were minimal data from AFRO and SEARO WHO regions, yet throughout the analysis, there seemed to be an abundance of more specific cases, specifically extending towards figuring out how many COVID cases and deaths did each individual country, the population of a country, and the informational/contextual analysis of each WHO region. It is highly recommended to research each WHO region and how they were affected by COVID-19.
+
+
+## Takeaway Message: 
+
+We all have lived through the pandemic. It has had a negative impact on the lives of many, through the loss of family members, financial stability, social interaction, etc. In hopes of finding information regarding the progress of vaccines and how they affect fatal risks, we have collected, reshaped, and analyzed two sets of data. One dataset being vaccination coverage across the globe, dependent on the region. And the other dataset being the total cases and mortality rates, also dependent on region. Using these datasets we were able to create graphs that would give us multiple visual representations on what kind of impact the vaccines have had over time. We can see the total vaccinations distributed over time, vaccination coverage vs cases and deaths, and the average vaccination coverage vs vaccination efficacy. The graphs would all point to similar conclusions. Brands with higher vaccination coverage typically have a higher percentage in efficacy. Vaccination coverage has gone up over time, and mortality rates have decreased. The research provided tells us that vaccines have had a positive impact on mitigating the severity of COVID-19. When looking at the total deaths from COVID-19 over time, we can see it begin to plateau after vaccines were developed. While some may argue that the vaccinations have been ineffective, the data shows otherwise. And with COVID-19 still at large, it makes sense to continue pushing for these vaccination campaigns and further alleviate the negative impacts that COVID-19 has had worldwide.
+
