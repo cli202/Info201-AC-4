@@ -23,6 +23,8 @@ Today COVID-19 is still at large with plenty of new variants being discovered. W
 
 ## Explain Your Data:
 
+These datasets are merged and later used to collect various amounts of information regarding average vaccination progression and the deceleration of spreading COVID-19. Overall, the global impact of COVID-19 has given us an understanding of how to potentially mitigate the spread of another pandemic if it were to occur. These datasets originated from two websites: Kaggle, a website with multiple datasets, and the CDC National Center for Health Statistics. One of the data sets was from the Center for Disease Control and Prevention and the other is from Kaggle where Gabriel Prada is the main collaborator. The data usage permission is freely available to the public. The only people allowed to change the data are the collaborators of Kaggle and the CDC.
+One of the datasets represents total vaccinations of different brands in all countries. The next dataset represents total COVID-19 cases and deaths within countries and their WHO regions. The data set population was COVID-19 Cases and Deaths and the data sample was the final merged dataset with vaccination count. 
 
 ### Description of final dataset 
 
