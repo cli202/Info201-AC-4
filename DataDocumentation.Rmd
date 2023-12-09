@@ -1,0 +1,48 @@
+---
+title: "DataDocumentation"
+author: "Cindy Li, Jacob Cash, Ismael Lagunes, Povilas Juskevicius"
+date: "2023-12-09"
+output: html_document
+---
+
+## Original Data Sources 
+### 1. Covid-19 World Vaccination Progress on Kaggle
+https://www.kaggle.com/datasets/gpreda/covid-world-vaccination-progress
+
+### 2. WHO's Covid 19 World Dataset 
+https://data.humdata.org/dataset/coronavirus-covid-19-cases-and-deaths/resource/2ac6c3c0-76fa-4486-9ad0-9aa9e253b78d
+
+## Variables Included
+Country: The country that the covid-19 data is reporting
+Date: Covid-19 data on said specific date 
+
+Total_Vaccinations: Total number of Covid-19 vaccinations in said country on specific date
+
+WHO_region: WHO region said country is in 
+
+New_cases: New Covid-19 cases in said country on specific date
+
+Cumulative_cases: Total Covid-19 cases in said country until specific date
+
+New_deaths: New Covid-19 deaths in said country on specific date
+
+Cumulative_deaths: Total Covid-19 deaths in said country until specific date
+
+Vaccine: The type of vaccine (possible one of many) that has been registered in said country
+
+Vaccinations_per_Type: Total number of type of vaccine specified in previous column that has been registered to people in said country until specific date
+
+Month: The month of the date
+
+Death_Rate: The rate of death in country as calculated by sum of Cumulative_deaths divided by Total_vaccinations for each country per month
+
+Death_Rate_Level: Categorical variable that divides Death_Rate into low, medium, and high levels. 
+
+Vaccine_Efficacy_Cases: Efficacy of different types of vaccines against new Covid-19 cases, as calculated by 1 - New_cases divided by Cumulative_cases in percentage form
+
+Vaccine_Efficacy_Deaths: Efficacy of different types of vaccines against new Covid-19 deaths, as calculated by 1 - New_deaths divided by Cumulative_cases in percentage form
+
+## Summary Statistics
+1. Number of rows: 25,360
+2. Number of columns: 15
+3. No missing or invalid date in any rows. 
